@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice exctrator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .file-input-container {
+            position: relative;
+        }
+        .file-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #f0f7ff;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .selected-file {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .analysis-container {
+            background-color: #f0f7ff;
+            border: 1px solid #ccdeff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .analysis-header {
+            color: #007bff;
+            margin-top: 0;
+            border-bottom: 1px solid #ccdeff;
+            padding-bottom: 10px;
+        }
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .pdf-content {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #fff;
+        }
+        .page-container {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+        }
+        .page-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Invoice exctrator</h1>
+    
+    <div class="upload-container">
+        <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+            <div class="file-input-container">
+                <input type="file" id="pdfFile" name="pdfFile" class="file-input" accept=".pdf" required>
+            </div>
+            <div id="selectedFile" class="selected-file">No file selected</div>
+            <button type="submit" class="submit-btn">Upload Invoice PDF</button>
+        </form>
+        <div id="loading" class="loading">Processing your PDF and exctrating Data...</div>
+    </div>
+    
+    <div id="resultContainer" class="result-container">
+        <h3>Upload Results:</h3>
+        <div id="uploadResult"></div>
+        
+        <div id="contentContainer" class="content-container" style="display: none;">
+            <div class="tab-container">
+                <div class="tab active" data-tab="analysis">Data</div>
+                <div class="tab" data-tab="content">PDF Content</div>
+            </div>
+            
+            <div id="analysisTab" class="tab-content active">
+                <div class="analysis-container">
+                    <h3 class="analysis-header">Data from pdf</h3>
+                    <div id="analysisContent"></div>
+                </div>
+            </div>
+            
+            <div id="contentTab" class="tab-content">
+                <div id="paginationContainer" class="pagination"></div>
+                <div id="pdfContent" class="pdf-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('uploadForm');
+            const fileInput = document.getElementById('pdfFile');
+            const selectedFile = document.getElementById('selectedFile');
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+            const uploadResult = document.getElementById('uploadResult');
+            const contentContainer = document.getElementById('contentContainer');
+            const pdfContent = document.getElementById('pdfContent');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const analysisContent = document.getElementById('analysisContent');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            let pdfPages = [];
+            let currentPage = 0;
+            
+            // Tab functionality
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(tabId + 'Tab').classList.add('active');
+                });
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    selectedFile.textContent = `Selected file: ${this.files[0].name}`;
+                } else {
+                    selectedFile.textContent = 'No file selected';
+                }
+            });
+            
+            function showPage(pageNum) {
+                currentPage = pageNum;
+                pdfContent.innerHTML = '';
+                
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'page-container';
+                
+                const pageHeader = document.createElement('div');
+                pageHeader.className = 'page-header';
+                pageHeader.textContent = `Page ${pageNum + 1}`;
+                
+                const pageContent = document.createElement('div');
+                pageContent.textContent = pdfPages[pageNum];
+                
+                pageDiv.appendChild(pageHeader);
+                pageDiv.appendChild(pageContent);
+                pdfContent.appendChild(pageDiv);
+                
+                // Update pagination buttons
+                const buttons = paginationContainer.querySelectorAll('button');
+                buttons.forEach((btn, idx) => {
+                    if (idx === pageNum) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            
+            function createPagination(numPages) {
+                paginationContainer.innerHTML = '';
+                
+                for (let i = 0; i < numPages; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i + 1;
+                    btn.onclick = () => showPage(i);
+                    if (i === 0) btn.classList.add('active');
+                    paginationContainer.appendChild(btn);
+                }
+            }
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                
+                if (fileInput.files.length === 0) {
+                    alert('Please select a PDF file first.');
+                    return;
+                }
+                
+                formData.append('file', fileInput.files[0]);
+                
+                loading.style.display = 'block';
+                resultContainer.style.display = 'none';
+                contentContainer.style.display = 'none';
+                
+                // Send file to server
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    loading.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                    
+                    if (data.success) {
+                        uploadResult.innerHTML = `
+                            <p style="color: green;">File uploaded and analyzed successfully!</p>
+                            <p>Filename: ${data.filename}</p>
+                            <p>Size: ${data.size} bytes</p>
+                            <p>Pages: ${data.pages}</p>
+                        `;
+                        
+                        // Display analysis
+                        if (data.analysis) {
+                            analysisContent.innerHTML = formatMarkdown(data.analysis);
+                        } else {
+                            analysisContent.textContent = "No analysis available.";
+                        }
+                        
+                        if (data.content && data.content.length > 0) {
+                            pdfPages = data.content;
+                            createPagination(data.pages);
+                            showPage(0);
+                        }
+                        
+                        contentContainer.style.display = 'block';
+                    } else {
+                        uploadResult.innerHTML = `
+                            <p style="color: red;">Error: ${data.error}</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                    uploadResult.innerHTML = `
+                        <p style="color: red;">An error occurred: ${error.message}</p>
+                    `;
+                });
+            });
+            
+            function formatMarkdown(text) {
+                if (!text) return '';
+                
+                // Headers
+                text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+                text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+                text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+                
+                // Bold
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Italic
+                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                // Lists
+                text = text.replace(/^\- (.*$)/gm, '<li>$1</li>');
+                text = text.replace(/^\d+\. (.*$)/gm, '<li>$1</li>');
+                
+                text = text.replace(/\n/g, '<br>');
+                
+                text = text.replace(/<\/li><br><li>/g, '</li><li>');
+                text = text.replace(/<li>(.*?)<\/li>/g, function(match) {
+                    if (match.indexOf('<ul>') === -1) {
+                        return '<ul>' + match + '</ul>';
+                    }
+                    return match;
+                });
+                
+                return text;
+            }
+        });
+    </script>
+</body>
+</html>
