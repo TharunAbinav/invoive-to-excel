@@ -1,95 +1,153 @@
+\templates\index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice exctrator</title>
+    <title>Invoice Data Extractor</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
         }
-        h1, h2, h3 {
-            color: #2c3e50;
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 30px;
         }
         h1 {
-            text-align: center;
-            margin-bottom: 30px;
+            color: #2c3e50;
         }
-        .upload-container {
-            background-color: #f9f9f9;
+        .container {
+            background-color: white;
             border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
         }
-        .upload-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .form-group {
+            margin-bottom: 20px;
         }
-        .file-input-container {
-            position: relative;
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
         }
         .file-input {
             width: 100%;
             padding: 10px;
-            border: 1px dashed #007bff;
+            border: 2px dashed #ddd;
             border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
             cursor: pointer;
-            background-color: #f0f7ff;
+            transition: all 0.3s;
         }
-        .submit-btn {
-            background-color: #007bff;
+        .file-input:hover {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+        }
+        .file-input-hidden {
+            display: none;
+        }
+        .btn {
+            background-color: #3498db;
             color: white;
+            padding: 12px 20px;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
         }
-        .submit-btn:hover {
-            background-color: #0056b3;
+        .btn:hover {
+            background-color: #2980b9;
         }
-        .selected-file {
-            margin-top: 10px;
-            font-size: 14px;
+        .btn.download {
+            background-color: #27ae60;
+            margin-right: 10px;
         }
-        .result-container {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
+        .btn.download:hover {
+            background-color: #219653;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
         }
-        .loading {
-            display: none;
-            text-align: center;
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 15px;
         }
-        .content-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        table, th, td {
+            border: 1px solid #ddd;
         }
-        .analysis-container {
-            background-color: #f0f7ff;
-            border: 1px solid #ccdeff;
-            border-radius: 5px;
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .loading {
+            text-align: center;
+            display: none;
             padding: 20px;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .download-options {
+            display: flex;
             margin-top: 20px;
+            gap: 10px;
         }
-        .analysis-header {
-            color: #007bff;
-            margin-top: 0;
-            border-bottom: 1px solid #ccdeff;
-            padding-bottom: 10px;
+        .file-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #7f8c8d;
         }
-        .tab-container {
+        .tabs {
             display: flex;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
@@ -97,274 +155,238 @@
         .tab {
             padding: 10px 20px;
             cursor: pointer;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            margin-right: 5px;
-            border-radius: 5px 5px 0 0;
+            border: 1px solid transparent;
         }
         .tab.active {
-            background-color: #fff;
-            border-bottom: 1px solid #fff;
+            border: 1px solid #ddd;
+            border-bottom-color: white;
+            border-radius: 4px 4px 0 0;
             margin-bottom: -1px;
-        }
-        .tab-content {
-            display: none;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 5px 5px;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .pdf-content {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 15px;
-            background-color: #fff;
-        }
-        .page-container {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #ccc;
-        }
-        .page-header {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 15px;
-            gap: 10px;
-        }
-        .pagination button {
-            padding: 5px 10px;
-            background: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .pagination button.active {
-            background: #007bff;
-            color: white;
+            background-color: white;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <h1>Invoice exctrator</h1>
-    
-    <div class="upload-container">
-        <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
-            <div class="file-input-container">
-                <input type="file" id="pdfFile" name="pdfFile" class="file-input" accept=".pdf" required>
-            </div>
-            <div id="selectedFile" class="selected-file">No file selected</div>
-            <button type="submit" class="submit-btn">Upload Invoice PDF</button>
-        </form>
-        <div id="loading" class="loading">Processing your PDF and exctrating Data...</div>
+    <div class="header">
+        <h1>Invoice Data Extractor</h1>
+        <p>Upload an invoice image or PDF to extract the data automatically</p>
     </div>
     
-    <div id="resultContainer" class="result-container">
-        <h3>Upload Results:</h3>
-        <div id="uploadResult"></div>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" id="uploadTab">Upload File</div>
+            <div class="tab" id="aboutTab">About</div>
+        </div>
         
-        <div id="contentContainer" class="content-container" style="display: none;">
-            <div class="tab-container">
-                <div class="tab active" data-tab="analysis">Data</div>
-                <div class="tab" data-tab="content">PDF Content</div>
-            </div>
-            
-            <div id="analysisTab" class="tab-content active">
-                <div class="analysis-container">
-                    <h3 class="analysis-header">Data from pdf</h3>
-                    <div id="analysisContent"></div>
+        <div id="uploadContent">
+            <div class="form-group">
+                <label for="file">Select Invoice File (PDF, PNG, JPG):</label>
+                <div class="file-input" id="fileDropArea">
+                    <p>Drop your file here or click to browse</p>
+                    <input type="file" id="file" class="file-input-hidden" accept=".pdf,.png,.jpg,.jpeg">
                 </div>
+                <div class="file-info" id="fileInfo"></div>
             </div>
             
-            <div id="contentTab" class="tab-content">
-                <div id="paginationContainer" class="pagination"></div>
-                <div id="pdfContent" class="pdf-content"></div>
+            <button class="btn" id="extractBtn" onclick="uploadFile()">Extract Data</button>
+        </div>
+        
+        <div id="aboutContent" style="display: none;">
+            <h3>About Invoice Extractor</h3>
+            <p>This tool helps you extract key information from invoices using advanced text recognition. It works with both PDF documents and images.</p>
+            
+            <h4>Supported Fields:</h4>
+            <ul>
+                <li>Company Name (Billed From)</li>
+                <li>Customer Name (Billed To)</li>
+                <li>Invoice Number</li>
+                <li>Date</li>
+                <li>Total Amount</li>
+                <li>Phone Number (if available)</li>
+                <li>Email (if available)</li>
+            </ul>
+            
+            <h4>Output Formats:</h4>
+            <ul>
+                <li>Excel (.xlsx) - Complete data with all extracted fields</li>
+                <li>CSV - Compatible with most spreadsheet applications</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="loader"></div>
+        <p>Processing your invoice... Please wait</p>
+    </div>
+    
+    <div id="result">
+        <div class="result-header">
+            <h3>Extraction Results</h3>
+            <button class="btn" style="width: auto; padding: 8px 15px;" onclick="document.getElementById('result').style.display='none'">Close</button>
+        </div>
+        <div id="resultContent"></div>
+        <div id="downloadSection" style="margin-top: 20px; display: none;">
+            <h4>Download Results:</h4>
+            <div class="download-options">
+                <a id="downloadExcelLink" class="btn download">Download Excel (.xlsx)</a>
+                <a id="downloadCsvLink" class="btn download">Download CSV</a>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('uploadForm');
-            const fileInput = document.getElementById('pdfFile');
-            const selectedFile = document.getElementById('selectedFile');
-            const loading = document.getElementById('loading');
-            const resultContainer = document.getElementById('resultContainer');
-            const uploadResult = document.getElementById('uploadResult');
-            const contentContainer = document.getElementById('contentContainer');
-            const pdfContent = document.getElementById('pdfContent');
-            const paginationContainer = document.getElementById('paginationContainer');
-            const analysisContent = document.getElementById('analysisContent');
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
+        // Tab switching functionality
+        document.getElementById('uploadTab').addEventListener('click', function() {
+            document.getElementById('uploadTab').classList.add('active');
+            document.getElementById('aboutTab').classList.remove('active');
+            document.getElementById('uploadContent').style.display = 'block';
+            document.getElementById('aboutContent').style.display = 'none';
+        });
+        
+        document.getElementById('aboutTab').addEventListener('click', function() {
+            document.getElementById('aboutTab').classList.add('active');
+            document.getElementById('uploadTab').classList.remove('active');
+            document.getElementById('aboutContent').style.display = 'block';
+            document.getElementById('uploadContent').style.display = 'none';
+        });
+        
+        // File drop area functionality
+        const dropArea = document.getElementById('fileDropArea');
+        const fileInput = document.getElementById('file');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#3498db';
+            dropArea.style.backgroundColor = '#f0f8ff';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#ddd';
+            dropArea.style.backgroundColor = '#f9f9f9';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#ddd';
+            dropArea.style.backgroundColor = '#f9f9f9';
             
-            let pdfPages = [];
-            let currentPage = 0;
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileInfo();
+            }
+        });
+        
+        fileInput.addEventListener('change', updateFileInfo);
+        
+        function updateFileInfo() {
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                fileInfo.textContent = `Selected: ${file.name} (${formatFileSize(file.size)})`;
+            } else {
+                fileInfo.textContent = '';
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        
+        function uploadFile() {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            const loadingDiv = document.getElementById('loading');
+            const downloadSection = document.getElementById('downloadSection');
+            const downloadExcelLink = document.getElementById('downloadExcelLink');
+            const downloadCsvLink = document.getElementById('downloadCsvLink');
             
-            // Tab functionality
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
+            if (!fileInput.files.length) {
+                alert('Please select a file first!');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Show loading indicator
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                
+                if (data.success) {
+                    // Format the keys for better display
+                    const formattedData = {};
+                    for (const [key, value] of Object.entries(data.data)) {
+                        const formattedKey = key
+                            .split('_')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                        formattedData[formattedKey] = value;
+                    }
                     
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
+                    // Display extracted data in a table
+                    let tableHtml = '<div class="success">Data extracted successfully!</div>';
+                    tableHtml += '<table>';
+                    tableHtml += '<tr><th>Field</th><th>Extracted Value</th></tr>';
                     
-                    this.classList.add('active');
-                    document.getElementById(tabId + 'Tab').classList.add('active');
-                });
-            });
-            
-            fileInput.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    selectedFile.textContent = `Selected file: ${this.files[0].name}`;
+                    for (const [key, value] of Object.entries(formattedData)) {
+                        tableHtml += `<tr><td>${key}</td><td>${value || 'Not found'}</td></tr>`;
+                    }
+                    
+                    tableHtml += '</table>';
+                    resultContent.innerHTML = tableHtml;
+                    
+                    // Show download links
+                    downloadExcelLink.href = `/download/${data.excel_file}`;
+                    downloadCsvLink.href = `/download/${data.csv_file}`;
+                    downloadSection.style.display = 'block';
                 } else {
-                    selectedFile.textContent = 'No file selected';
+                    resultContent.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+                    downloadSection.style.display = 'none';
                 }
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultContent.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                downloadSection.style.display = 'none';
             });
-            
-            function showPage(pageNum) {
-                currentPage = pageNum;
-                pdfContent.innerHTML = '';
-                
-                const pageDiv = document.createElement('div');
-                pageDiv.className = 'page-container';
-                
-                const pageHeader = document.createElement('div');
-                pageHeader.className = 'page-header';
-                pageHeader.textContent = `Page ${pageNum + 1}`;
-                
-                const pageContent = document.createElement('div');
-                pageContent.textContent = pdfPages[pageNum];
-                
-                pageDiv.appendChild(pageHeader);
-                pageDiv.appendChild(pageContent);
-                pdfContent.appendChild(pageDiv);
-                
-                // Update pagination buttons
-                const buttons = paginationContainer.querySelectorAll('button');
-                buttons.forEach((btn, idx) => {
-                    if (idx === pageNum) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-            
-            function createPagination(numPages) {
-                paginationContainer.innerHTML = '';
-                
-                for (let i = 0; i < numPages; i++) {
-                    const btn = document.createElement('button');
-                    btn.textContent = i + 1;
-                    btn.onclick = () => showPage(i);
-                    if (i === 0) btn.classList.add('active');
-                    paginationContainer.appendChild(btn);
-                }
-            }
-            
-            form.addEventListener('submit', function(e) {
+        }
+        
+        // Add this function to handle download errors
+        function handleDownloadError(error) {
+            alert('Download failed: ' + error);
+        }
+        
+        // Modify the download links to handle errors
+        downloadExcelLink.addEventListener('click', function(e) {
+            if (!downloadExcelLink.href.includes('/download/')) {
                 e.preventDefault();
-                
-                const formData = new FormData();
-                
-                if (fileInput.files.length === 0) {
-                    alert('Please select a PDF file first.');
-                    return;
-                }
-                
-                formData.append('file', fileInput.files[0]);
-                
-                loading.style.display = 'block';
-                resultContainer.style.display = 'none';
-                contentContainer.style.display = 'none';
-                
-                // Send file to server
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    
-                    loading.style.display = 'none';
-                    resultContainer.style.display = 'block';
-                    
-                    if (data.success) {
-                        uploadResult.innerHTML = `
-                            <p style="color: green;">File uploaded and analyzed successfully!</p>
-                            <p>Filename: ${data.filename}</p>
-                            <p>Size: ${data.size} bytes</p>
-                            <p>Pages: ${data.pages}</p>
-                        `;
-                        
-                        // Display analysis
-                        if (data.analysis) {
-                            analysisContent.innerHTML = formatMarkdown(data.analysis);
-                        } else {
-                            analysisContent.textContent = "No analysis available.";
-                        }
-                        
-                        if (data.content && data.content.length > 0) {
-                            pdfPages = data.content;
-                            createPagination(data.pages);
-                            showPage(0);
-                        }
-                        
-                        contentContainer.style.display = 'block';
-                    } else {
-                        uploadResult.innerHTML = `
-                            <p style="color: red;">Error: ${data.error}</p>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                    resultContainer.style.display = 'block';
-                    uploadResult.innerHTML = `
-                        <p style="color: red;">An error occurred: ${error.message}</p>
-                    `;
-                });
-            });
-            
-            function formatMarkdown(text) {
-                if (!text) return '';
-                
-                // Headers
-                text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-                text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-                text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-                
-                // Bold
-                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                
-                // Italic
-                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
-                // Lists
-                text = text.replace(/^\- (.*$)/gm, '<li>$1</li>');
-                text = text.replace(/^\d+\. (.*$)/gm, '<li>$1</li>');
-                
-                text = text.replace(/\n/g, '<br>');
-                
-                text = text.replace(/<\/li><br><li>/g, '</li><li>');
-                text = text.replace(/<li>(.*?)<\/li>/g, function(match) {
-                    if (match.indexOf('<ul>') === -1) {
-                        return '<ul>' + match + '</ul>';
-                    }
-                    return match;
-                });
-                
-                return text;
+                alert('Excel file is not available for download.');
+            }
+        });
+        
+        downloadCsvLink.addEventListener('click', function(e) {
+            if (!downloadCsvLink.href.includes('/download/')) {
+                e.preventDefault();
+                alert('CSV file is not available for download.');
             }
         });
     </script>
